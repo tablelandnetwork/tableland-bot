@@ -1,0 +1,36 @@
+{
+  "name": "tablebot",
+  "version": "1.0.0",
+  "description": "Discord bot for interacting with the Tableland network",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tablelandnetwork/tablebot.git"
+  },
+  "keywords": [
+    "tableland",
+    "discord",
+    "bot"
+  ],
+  "type": "module",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/tablelandnetwork/tablebot/issues"
+  },
+  "homepage": "https://github.com/tablelandnetwork/tablebot#readme",
+  "dependencies": {
+    "@tableland/sdk": "^3.1.4",
+    "axios": "^1.1.3",
+    "discord.js": "^14.6.0"
+  },
+  "devDependencies": {
+    "dotenv": "^16.0.3",
+    "eslint": "^8.26.0",
+    "prettier": "^2.7.1"
+  }
+}
