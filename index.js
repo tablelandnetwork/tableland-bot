@@ -1,37 +1,26 @@
 import dotenv from "dotenv";
 import { Client, Collection, Events, GatewayIntentBits } from "discord.js";
-import { query } from "./commands/main.js";
+import { parse, read } from "./commands/index.js";
+import { ready, interactionCreate } from "./events/index.js";
+import initSqlParser from "@tableland/sqlparser";
 dotenv.config();
+
+// Initialize `@tableland/sqlparser` module (adds `sqlparser` object to global namespace)
+await initSqlParser();
 
 // Create a new client instance
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 // Initialize & set commands
 client.commands = new Collection();
-client.commands.set(query.data.name, query);
+client.commands.set(read.data.name, read);
+client.commands.set(parse.data.name, parse);
 
 // When the client is ready, run this code (only once)
-client.once(Events.ClientReady, (c) => {
-  console.log(`Initialize bot: logged in as '${c.user.tag}'`);
-});
+client.once(ready.name, (...args) => ready.execute(...args));
 
 // Create an event listener
-client.on(Events.InteractionCreate, async (interaction) => {
-  const command = interaction.client.commands.get(interaction.commandName);
-
-  if (!command) {
-    console.error(`No command matching ${interaction.commandName} was found.`);
-    return;
-  }
-
-  try {
-    await command.execute(interaction);
-  } catch (error) {
-    console.error(error);
-    await interaction.reply({
-      content: "There was an error while executing this command!",
-      ephemeral: true,
-    });
-  }
+client.on(interactionCreate.name, (...args) => {
+  interactionCreate.execute(...args);
 });
 
 // Log in to Discord with your client's token
