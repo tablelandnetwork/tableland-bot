@@ -3,19 +3,20 @@ import { connect, resultsToObjects, SUPPORTED_CHAINS } from "@tableland/sdk";
 import findColor from "../utils/findColor.js";
 
 async function parse(statement) {
-  const { statements, type } = await sqlparser.normalize(statement);
-  if (type != "read") throw new Error("Statement provided is not a read query");
+  const { statements, type } = await sqlparser.normalize(statement); // eslint-disable-line no-undef
+  if (type !== "read")
+    throw new Error("Statement provided is not a read query");
   const tableName = statements[0].match(/FROM (\w+)/i)[1];
   const parts = tableName.split("_");
   const chainId = parts[parts.length - 2];
   const tableId = parts[parts.length - 1];
   let chainName;
   for (const chain in SUPPORTED_CHAINS) {
-    if (SUPPORTED_CHAINS[chain].chainId == Number(chainId)) {
+    if (SUPPORTED_CHAINS[chain].chainId === Number(chainId)) {
       chainName = chain;
     }
   }
-  if (chainName == undefined) throw new Error("Invalid chain provided");
+  if (chainName === undefined) throw new Error("Invalid chain provided");
   return { tableName, tableId, chainId, chainName };
 }
 
@@ -50,6 +51,8 @@ export const read = {
         .setRequired(true)
     ),
   async execute(interaction) {
+    await interaction.deferReply();
+
     let statement = await interaction.options.getString("statement");
     try {
       const { tableName, tableId, chainId, chainName, data } =
@@ -69,20 +72,19 @@ export const read = {
       const tableSchema = await fetch(
         `https://testnet.tableland.network/schema/${tableName}`
       ).then((res) => res.json());
+
       const tableSchemaFormatted = tableSchema.columns
         .map((column, key) => {
-          let constraints = column.constraints.length
+          const constraints = column.constraints.length
             ? `${column.constraints.join(" ")}`
             : "";
           return `${column.name} ${column.type} ${constraints}`;
         })
         .join("\n");
-
       const limitData = data.slice(0, 1)[0];
       const dataString = JSON.stringify(limitData, null, 2);
       const codeblockDataSample = codeBlock("json", dataString);
       const codeblockTableSchema = codeBlock("json", tableSchemaFormatted);
-
       const embedResponse = {
         color: parseInt(color, 16),
         title: "See more at the Tableland gateway",
@@ -121,6 +123,11 @@ export const read = {
             inline: true,
           },
           {
+            name: "Chain",
+            value: SUPPORTED_CHAINS[chainName].phrase,
+            inline: true,
+          },
+          {
             name: "\u200b",
             value: hyperlink("See the TABLE NFT", tableSvgUrl),
           },
@@ -136,7 +143,7 @@ export const read = {
         },
       };
 
-      await interaction.reply({
+      await interaction.editReply({
         content:
           bold("Query: ") + codeBlock(statement) + `\n${bold("Response: ")}`,
         embeds: [embedResponse],
@@ -150,10 +157,10 @@ export const read = {
         const errorPosition = Number(matchErrorPosition[0]);
         const highlightCharacter = statement.charAt(errorPosition - 1) + "⚠️";
         statement = statement.replace(/./g, (c, i) =>
-          i == errorPosition - 1 ? highlightCharacter : c
+          i === errorPosition - 1 ? highlightCharacter : c
         );
       }
-      await interaction.reply({
+      await interaction.editReply({
         content: bold("Invalid: ") + error + codeBlock(statement),
       });
     }

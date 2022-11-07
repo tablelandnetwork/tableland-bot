@@ -15,7 +15,7 @@ export const parse = {
     let result;
     let error;
     try {
-      await sqlparser.normalize(statement);
+      await sqlparser.normalize(statement); // eslint-disable-line no-undef
       result = true;
     } catch (err) {
       result = false;
@@ -27,7 +27,7 @@ export const parse = {
         const errorPosition = Number(matchErrorPosition[0]);
         const highlightCharacter = statement.charAt(errorPosition - 1) + "⚠️";
         statement = statement.replace(/./g, (c, i) =>
-          i == errorPosition - 1 ? highlightCharacter : c
+          i === errorPosition - 1 ? highlightCharacter : c
         );
       }
     }

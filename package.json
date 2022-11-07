@@ -4,6 +4,11 @@
   "description": "Discord bot for interacting with the Tableland network",
   "main": "index.js",
   "scripts": {
+    "lint": "eslint '**/*.{js,ts}'",
+    "lint:fix": "npm run lint -- --fix",
+    "prettier": "prettier '**/*.{ts,json,sol,md}' --check",
+    "prettier:fix": "npm run prettier -- --write",
+    "format": "npm run prettier:fix && npm run lint:fix",
     "start": "node index.js",
     "dev": "nodemon index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -17,6 +22,9 @@
     "discord",
     "bot"
   ],
+  "engines": {
+    "node": ">=12.0.0"
+  },
   "type": "module",
   "license": "MIT",
   "bugs": {
@@ -31,7 +39,12 @@
   },
   "devDependencies": {
     "dotenv": "^16.0.3",
-    "eslint": "^8.26.0",
+    "eslint": "^8.27.0",
+    "eslint-config-prettier": "^8.5.0",
+    "eslint-config-standard": "^17.0.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-n": "^15.5.0",
+    "eslint-plugin-promise": "^6.1.1",
     "prettier": "^2.7.1"
   }
 }
