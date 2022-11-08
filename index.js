@@ -1,12 +1,10 @@
 import dotenv from "dotenv";
-// import express from "express";
 import { Client, Collection, GatewayIntentBits } from "discord.js";
-import { parse, read, rigsStats } from "./commands/index.js";
+import { parse, read, rigs } from "./commands/index.js";
 import { ready, interactionCreate } from "./events/index.js";
 import initSqlParser from "@tableland/sqlparser";
 dotenv.config();
 
-// const app = express();
 // Initialize `@tableland/sqlparser` module (adds `sqlparser` object to global namespace)
 (async () => await initSqlParser())();
 
@@ -19,7 +17,7 @@ const client = new Client({
 client.commands = new Collection();
 client.commands.set(read.data.name, read);
 client.commands.set(parse.data.name, parse);
-client.commands.set(rigsStats.data.name, rigsStats);
+client.commands.set(rigs.data.name, rigs);
 
 // When the client is ready, run this code (only once)
 client.once(ready.name, (...args) => ready.execute(...args));

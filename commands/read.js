@@ -74,7 +74,7 @@ export const read = {
       ).then((res) => res.json());
 
       const tableSchemaFormatted = tableSchema.columns
-        .map((column, key) => {
+        .map((column, _) => {
           const constraints = column.constraints.length
             ? `${column.constraints.join(" ")}`
             : "";

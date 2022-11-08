@@ -1,13 +1,13 @@
 import { REST, Routes } from "discord.js";
 import dotenv from "dotenv";
-import { parse, read, rigsStats } from "./commands/index.js";
+import { parse, read, rigs } from "./commands/index.js";
 dotenv.config();
-console.log(rigsStats);
+
 const token = process.env.DISCORD_TOKEN;
 const clientId = process.env.CLIENT_ID;
 
 // Add the SlashCommandBuilder#toJSON() output of each command's data for deployment
-const commands = [read.data, parse.data, rigsStats.data];
+const commands = [read.data, parse.data, rigs.data];
 
 // Construct and prepare an instance of the REST module
 const rest = new REST({ version: "10" }).setToken(token);
