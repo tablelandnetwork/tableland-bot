@@ -16,7 +16,6 @@ async function getRigInfo(tokenId) {
     originalOwner: await token.mintInfo.originatorAddress,
   };
 }
-await getRigInfo("378");
 
 async function getRigsCollectionStats() {
   try {
@@ -65,7 +64,7 @@ export const rigs = {
   async execute(interaction) {
     await interaction.deferReply();
 
-    let tokenId = await interaction.options.getString("token-id");
+    const tokenId = await interaction.options.getString("token-id");
     if (!tokenId) {
       try {
         const stats = await getRigsCollectionStats();
@@ -202,7 +201,7 @@ export const rigs = {
         ).then((data) => data.json());
         const { image, attributes } = await request;
         const ipfsPath = await image.match(/ipfs:\/\/(.*)/)[1];
-        const cid = ipfsPath.match(/^[^\/]*/);
+        const cid = ipfsPath.match(/^[^/]*/);
         const imagePath = ipfsPath.match(/\/(.*)/)[1];
         const url = `https://${cid}.ipfs.nftstorage.link/${imagePath}`;
         const { value: fleet } = attributes.find(

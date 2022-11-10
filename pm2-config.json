@@ -1,0 +1,9 @@
+{
+  "apps": [
+    {
+      "name": "tablebot",
+      "script": "./index.js",
+      "watch": true
+    }
+  ]
+}
