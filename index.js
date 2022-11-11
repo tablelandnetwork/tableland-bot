@@ -8,6 +8,12 @@ dotenv.config();
 // Initialize `@tableland/sqlparser` module (adds `sqlparser` object to global namespace)
 (async () => await initSqlParser())();
 
+// Set the Discord bot token -- it will be a different bot for `production` vs. `development`
+const discordToken =
+  process.env.NODE_ENV === "production"
+    ? process.env.DISCORD_TOKEN
+    : process.env.DEVELOPMENT_DISCORD_TOKEN;
+
 // Create a new client instance
 const client = new Client({
   intents: [GatewayIntentBits.Guilds],
@@ -28,4 +34,4 @@ client.on(interactionCreate.name, (...args) => {
 });
 
 // Log in to Discord with your client's token
-client.login(process.env.DISCORD_TOKEN);
+client.login(discordToken);

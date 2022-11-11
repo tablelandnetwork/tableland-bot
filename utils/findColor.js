@@ -1,3 +1,4 @@
+// Uses logic from the TABLE NFT SVG color generator: https://github.com/tablelandnetwork/table-nft-svg/blob/main/server/findColor.js
 const colors = [
   "0x452858",
   "0x5A2F5A",
