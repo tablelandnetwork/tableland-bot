@@ -1,5 +1,6 @@
 import { SlashCommandBuilder, bold, codeBlock } from "discord.js";
 
+// `parse` runs the Tableland `sqlparser` and checks if a query (read, write, etc.) is valid
 export const parse = {
   data: new SlashCommandBuilder()
     .setName("parse")

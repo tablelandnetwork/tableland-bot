@@ -1,9 +1,10 @@
 import { Events } from "discord.js";
 
+// `ready` event occurs upon initializing the application; only occurs once
 export const ready = {
   name: Events.ClientReady,
   once: true,
   execute(client) {
-    console.log(`Ready! Logged in as ${client.user.tag}`);
+    console.log(`Bot initialized and logged in as: ${client.user.tag}`);
   },
 };

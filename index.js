@@ -1,7 +1,12 @@
 import dotenv from "dotenv";
 import { Client, Collection, GatewayIntentBits } from "discord.js";
 import { parse, read, rigs } from "./commands/index.js";
-import { ready, interactionCreate } from "./events/index.js";
+import {
+  ready,
+  interactionCreate,
+  guildCreate,
+  guildDelete,
+} from "./events/index.js";
 import initSqlParser from "@tableland/sqlparser";
 dotenv.config();
 
@@ -25,10 +30,25 @@ client.commands.set(read.data.name, read);
 client.commands.set(parse.data.name, parse);
 client.commands.set(rigs.data.name, rigs);
 
-// When the client is ready, run this code (only once)
-client.once(ready.name, (...args) => ready.execute(...args));
+// TODO: Perform action upon joining, like caching operations: `client.guilds.cache.set(guild.id, { /* create new channel */})`
+client.on(guildCreate.name, (guild) => {
+  guildCreate.execute(guild);
+});
 
-// Create an event listener
+// TODO: Perform action upon server removal, like caching operations: `client.guilds.cache.delete(guild)`
+client.on(guildDelete.name, (guild) => {
+  // Use `available` to ensure the bot wasn't booted because a server went down
+  if (guild.available) {
+    guildDelete.execute(guild);
+  }
+});
+
+// When the client is ready, run this code (only once)
+client.on(ready.name, (...args) => {
+  ready.execute(...args);
+});
+
+// Create an event listener for user interactions
 client.on(interactionCreate.name, (...args) => {
   interactionCreate.execute(...args);
 });
