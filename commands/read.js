@@ -74,7 +74,7 @@ async function readTableland(statement) {
 export const read = {
   data: new SlashCommandBuilder()
     .setName("read")
-    .setDescription("asdf Returns the results from a Tableland read query")
+    .setDescription("Returns the results from a Tableland read query")
     .addStringOption((option) =>
       option
         .setName("statement")
