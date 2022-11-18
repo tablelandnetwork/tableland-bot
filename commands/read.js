@@ -35,7 +35,7 @@ async function parse(statement) {
 }
 
 /**
- *
+ * Establishes a connection to both the Tableland network and the defined chain
  * @param {string} chainName - The name of the blockchain in which the table exists on
  * @returns {Object} Connection - A Tableland SDK `Connection` object to the Tableland network
  */
@@ -70,10 +70,11 @@ async function readTableland(statement) {
   }
 }
 
+// `read` command allows Discord members to query the Tableland network across any chain
 export const read = {
   data: new SlashCommandBuilder()
     .setName("read")
-    .setDescription("Returns the results from a Tableland read query")
+    .setDescription("asdf Returns the results from a Tableland read query")
     .addStringOption((option) =>
       option
         .setName("statement")

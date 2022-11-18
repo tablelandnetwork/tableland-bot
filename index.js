@@ -13,11 +13,14 @@ dotenv.config();
 // Initialize `@tableland/sqlparser` module (adds `sqlparser` object to global namespace)
 (async () => await initSqlParser())();
 
+// Set the environment variable as either `production` or `development`
+const environment =
+  process.env.NODE_ENV === "development" ? "development" : "production";
+const isDevelopment = environment === "development";
 // Set the Discord bot token -- it will be a different bot for `production` vs. `development`
-const discordToken =
-  process.env.NODE_ENV === "production"
-    ? process.env.DISCORD_TOKEN
-    : process.env.DEVELOPMENT_DISCORD_TOKEN;
+const discordToken = isDevelopment
+  ? process.env.DEVELOPMENT_DISCORD_TOKEN
+  : process.env.DISCORD_TOKEN;
 
 // Create a new client instance
 const client = new Client({

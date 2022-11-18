@@ -9,10 +9,10 @@
     "prettier": "prettier '**/*.{ts,json,sol,md}' --check",
     "prettier:fix": "npm run prettier -- --write",
     "format": "npm run prettier:fix && npm run lint:fix",
-    "start": "NODE_ENV=production pm2 start pm2-config.json",
-    "deploy:production": "NODE_ENV=production node deploy-commands.js",
-    "deploy:development": "node deploy-commands.js",
-    "dev": "nodemon index.js",
+    "start": "pm2 start pm2-config.json",
+    "deploy:production": "node deploy-commands.js",
+    "deploy:development": "NODE_ENV=development node deploy-commands.js",
+    "dev": "NODE_ENV=development nodemon index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -34,6 +34,7 @@
   },
   "homepage": "https://github.com/tablelandnetwork/tablebot#readme",
   "dependencies": {
+    "@tableland/rigs": "^0.0.2",
     "@tableland/sdk": "^3.1.4",
     "@tableland/sqlparser": "^0.1.0",
     "@zoralabs/zdk": "^2.2.0",

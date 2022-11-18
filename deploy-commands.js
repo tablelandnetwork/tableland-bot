@@ -4,18 +4,20 @@ import { parse, read, rigs } from "./commands/index.js";
 dotenv.config();
 
 // Set the environment variable as either `production` or `development`
-const environment = process.env.NODE_ENV || "development";
+const environment =
+  process.env.NODE_ENV === "development" ? "development" : "production";
+const isDevelopment = environment === "development";
 // Define Discord bot variables
 let token;
 let clientId;
 let guildId;
-if (environment === "production") {
-  token = process.env.DISCORD_TOKEN;
-  clientId = process.env.CLIENT_ID;
-} else {
+if (isDevelopment) {
   token = process.env.DEVELOPMENT_DISCORD_TOKEN;
   clientId = process.env.DEVELOPMENT_CLIENT_ID;
   guildId = process.env.DEVELOPMENT_GUILD_ID;
+} else {
+  token = process.env.DISCORD_TOKEN;
+  clientId = process.env.CLIENT_ID;
 }
 
 // Add the SlashCommandBuilder#toJSON() output of each command's data for deployment
@@ -31,16 +33,9 @@ const rest = new REST({ version: "10" }).setToken(token);
       throw new Error("Discord token or client ID is undefined");
     // `rest.put()` method is assigned to `data` & used to refresh all commands with the current set
     let data;
-    // `production` node env will update & install commands for all guilds
-    if (environment === "production") {
-      console.log(
-        `Started refreshing ${commands.length} application (/) commands.`
-      );
-      data = await rest.put(Routes.applicationCommands(clientId), {
-        body: commands,
-      });
-    } else {
-      // `development` mode will update & install commands for *only* the guild defined at `guildId`
+
+    // `development` mode will update & install commands for *only* the guild defined at `guildId`
+    if (isDevelopment) {
       if (guildId === undefined)
         throw new Error("Discord guild ID is undefined");
 
@@ -50,6 +45,14 @@ const rest = new REST({ version: "10" }).setToken(token);
           body: commands,
         }
       );
+    } else {
+      // `production` node env will update & install commands for all guilds
+      console.log(
+        `Started refreshing ${commands.length} application (/) commands.`
+      );
+      data = await rest.put(Routes.applicationCommands(clientId), {
+        body: commands,
+      });
     }
 
     console.log(
