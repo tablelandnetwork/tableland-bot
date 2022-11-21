@@ -51,7 +51,7 @@ For those looking to build _their own_ Discord bot, use this project as a starti
 1. Clone this repo: `git clone https://github.com/tablelandnetwork/tableland-bot`
 2. Install packages: `npm install`
 3. Update the `.env` file, if you haven't already (see `.env.example`)
-4. For devleopment, run `npm run dev` to start the server, and run `npm run deploy:development` to install the commands (only on the dev server).
+4. For development, run `npm run dev` to start the server, and run `npm run deploy:development` to install the commands (only on the dev server).
 5. For production, run `npm run start` to start the server, and run `npm run deploy:production` to install the commands (on all servers).
 
 # Contributing
