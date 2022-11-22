@@ -1,9 +1,9 @@
 import { SlashCommandBuilder, italic } from "discord.js";
-import { deployments } from "@tableland/rigs/deployments.js";
+import { deployments } from "@tableland/rigs/deployments";
 import { ZDK } from "@zoralabs/zdk";
 
 // Define the Rigs contract address (on Ethereum)
-const rigsContract = "0x8EAa9AE1Ac89B1c8C8a8104D08C045f78Aadb42D";
+const rigsContract = deployments.ethereum.contractAddress;
 
 /**
  * Retrieves a Rig's current owner, original minting address, and metadata
@@ -27,31 +27,64 @@ async function getRigInfo(tokenId) {
   token = token.token; // Response has weird nesting of `token`...semantics in the return
   // Form a Tableland read query on the Rigs attributes and lookups tables, which form Rigs metadata
   const query = `
-    select 
-      json_object(
-        'cid', 
-        rendersCid, 
-        'imagePath', 
-        rig_id || '/' || image_full_name, 
-        'attributes', 
-        json_group_array(
-          json_object(
-            'display_type', display_type, 'trait_type', 
-            trait_type, 'value', value
+  select 
+    json_object(
+      'cid', 
+      renders_cid,
+      'imagePath', 
+      rig_id || '/' || image_thumb_name, 
+      'attributes', 
+      json_insert(
+        (
+          select 
+            json_group_array(
+              json_object(
+                'display_type', display_type, 'trait_type', 
+                trait_type, 'value', value
+              )
+            ) 
+          from 
+            ${deployments.ethereum.attributesTable}  
+          where 
+            rig_id = ${tokenId}
+          group by 
+            rig_id
+        ), 
+        '$[#]', 
+        json_object(
+          'display_type', 
+          'string', 
+          'trait_type', 
+          'Garage Status', 
+          'value', 
+          coalesce(
+            (
+              select 
+                coalesce(end_time, 'in-flight') 
+              from 
+                ${deployments.ethereum.pilotSessionsTable} 
+              where 
+                rig_id = ${tokenId}
+                and end_time is null
+            ), 
+            'parked'
           )
         )
-      ) 
-    from 
-    ${deployments.ethereum.attributesTable} 
-      join ${deployments.ethereum.lookupsTable} 
-    where 
-      rig_id = ${tokenId}
-    group by 
-      rig_id
-    `;
+      )
+    ) 
+  from 
+    ${deployments.ethereum.attributesTable}   
+    join ${deployments.ethereum.lookupsTable}  
+  where 
+    rig_id = ${tokenId}
+  group by 
+    rig_id;
+  `;
   // Make a request to the Tableland gateway to get Rigs metadata
   const request = await fetch(
-    `https://testnet.tableland.network/query?unwrap=true&extract=true&s=${query}`
+    `https://testnet.tableland.network/query?unwrap=true&extract=true&s=${encodeURIComponent(
+      query
+    )}`
   ).then((data) => data.json());
   // Destructure the gateway response data for the image info and NFT `attributes`
   const { cid, imagePath, attributes } = await request;
@@ -67,7 +100,22 @@ async function getRigInfo(tokenId) {
 }
 
 /**
- * Retruns Rigs collections stats using an unauthenticated OpenSea API call
+ * Retrieves a Rig starting block for Flight Time Rewards purposes
+ * @param {string} tokenId - Rig `tokenId` to query information about
+ * @returns {number} The most recent session's starting block for flight time
+ */
+async function getFlightStartTime(tokenId) {
+  // Make a request to the Tableland gateway to get Rig flight time data
+  const query = `select start_time from ${deployments.ethereum.pilotSessionsTable} where rig_id = ${tokenId} order by id desc limit 1`;
+  return await fetch(
+    `https://testnet.tableland.network/query?unwrap=true&extract=true&s=${encodeURIComponent(
+      query
+    )}`
+  ).then((data) => data.json());
+}
+
+/**
+ * Returns Rigs collections stats using an unauthenticated OpenSea API call
  * @returns Object of `weekly`, `monthly`, and `total` Rigs collection stats
  */
 async function getRigsCollectionStats() {
@@ -243,6 +291,7 @@ export const rigs = {
           console.error(err);
           await interaction.editReply({
             content: "Error fetching Rigs collection stats. Please try again.",
+            ephemeral: true,
           });
         }
         break;
@@ -266,6 +315,15 @@ export const rigs = {
           const { value: ogPercentage } = attributes.find(
             (attr) => attr.trait_type === "% Original"
           );
+          // Define the Garage status
+          const { value: garageStatus } = attributes.find(
+            (attr) => attr.trait_type === "Garage Status"
+          );
+          // If the Rig is in-flight, get its starting block
+          let flightStartTime;
+          if (garageStatus === "in-flight") {
+            flightStartTime = await getFlightStartTime(tokenId);
+          }
           // Create an embedded response object that includes Rig attributes and image
           const embedResponse = {
             title: `Rig #${tokenId}`,
@@ -287,6 +345,19 @@ export const rigs = {
               {
                 name: "First Hodler?",
                 value: owner === originalOwner ? "YES 🙌" : "nope 😔",
+                inline: true,
+              },
+              {
+                name: "Garage Status",
+                value: garageStatus,
+                inline: true,
+              },
+              {
+                name: "Start Time",
+                value:
+                  flightStartTime === undefined
+                    ? "N/A"
+                    : await flightStartTime.toString(),
                 inline: true,
               },
               {

@@ -1,7 +1,7 @@
 {
   "apps": [
     {
-      "name": "tablebot",
+      "name": "tableland-bot",
       "script": "./index.js",
       "watch": true
     }

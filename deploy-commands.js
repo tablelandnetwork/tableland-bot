@@ -26,7 +26,7 @@ const commands = [read.data, parse.data, rigs.data];
 // Construct and prepare an instance of the REST module
 const rest = new REST({ version: "10" }).setToken(token);
 
-// and deploy your commands!
+// Install commands on Discord
 (async () => {
   try {
     if (token === undefined || clientId === undefined)
