@@ -17,22 +17,24 @@ async function parse(statement) {
   if (type !== "read")
     throw new Error("Statement provided is not a read query");
   // The table's name is the first value after a "FROM" in the SELECT statement
-  const tableName = statements[0].match(/FROM (\w+)/i)[1];
+  const tableNames = await sqlparser.getUniqueTableNames(statements.join(";"));
+  const tableName = tableNames[0];
   // Recall a table's name: `{prefix}_{chainId}_{tableId}`
   // The last and second to last values are the `chainId` and `tableId`, separated by a `_`
   const parts = tableName.split("_");
   const chainId = parts[parts.length - 2];
   const tableId = parts[parts.length - 1];
   // Ensure the chain is supported by Tableland
-  console.log(helpers.supportedChains);
-  let chainName;
-  for (const chain in SUPPORTED_CHAINS) {
-    if (SUPPORTED_CHAINS[chain].chainId === Number(chainId)) {
-      chainName = chain;
+  let chainName, baseUrl;
+  const supportedChains = helpers.supportedChains;
+  for (const chain in supportedChains) {
+    if (supportedChains[chain].chainId === Number(chainId)) {
+      chainName = supportedChains[chain].chainName;
+      baseUrl = supportedChains[chain].baseUrl;
     }
   }
   if (chainName === undefined) throw new Error("Invalid chain provided");
-  return { tableName, chainId, tableId, chainName };
+  return { tableName, chainId, tableId, chainName, baseUrl };
 }
 
 /**
@@ -40,10 +42,10 @@ async function parse(statement) {
  * @param {string} chainName - The name of the blockchain in which the table exists on
  * @returns {Object} Connection - A Tableland SDK `Connection` object to the Tableland network
  */
-async function connectTableland(chainName) {
+async function connectDatabase() {
   try {
-    return await connect({ chain: chainName });
-  } catch {
+    return new Database();
+  } catch (err) {
     throw new Error("Error connecting to Tableland");
   }
 }
@@ -55,17 +57,19 @@ async function connectTableland(chainName) {
  * @returns {string} chainId - The chain ID in which the table is deployed on
  * @returns {string} tableId - The table ID
  * @returns {string} chainName - Chain in which the table was minted on
+ * @returns {string} baseUrl - The Tableland gateway URL for the chain
  * @returns {Object} tableData - The resulting table data as an object (i.e., columns-rows as key-value pairs)
  */
 async function readTableland(statement) {
   try {
     // Parse the SQL statement to then get required info for querying Tableland across any chain
-    const { tableName, chainId, tableId, chainName } = await parse(statement);
-    const tableland = await connectTableland(chainName);
-    const readResponse = await tableland.read(statement);
-    // Transform the Tableland read response data to a JSON object of key-value pairs of columns-rows
-    const tableData = await resultsToObjects(readResponse);
-    return { tableName, chainId, tableId, chainName, tableData };
+    const { tableName, chainId, tableId, chainName, baseUrl } = await parse(
+      statement
+    );
+    const db = await connectDatabase();
+    const response = await db.prepare(statement).all();
+    const tableData = response.results;
+    return { tableName, chainId, tableId, chainName, baseUrl, tableData };
   } catch (err) {
     throw new Error(err);
   }
@@ -88,30 +92,28 @@ export const read = {
     let statement = await interaction.options.getString("statement");
     try {
       // Make a read request on the Tableland table
-      const { tableName, chainId, tableId, chainName, tableData } =
+      const { tableName, chainId, tableId, chainName, baseUrl, tableData } =
         await readTableland(statement);
       // For the Discord embed, form some relevant URLs that will be displayed to the user
       const encodeStatement = encodeURIComponent(statement);
-      const tableSvgUrl = `https://render.tableland.xyz/${chainId}/${tableId}`;
-      const gatewayQueryUrl = `https://testnet.tableland.network/query?s=${encodeStatement}`;
-      const metadataUrl = `https://testnet.tableland.network/chain/${chainId}/tables/${tableId}`;
+      const gatewayQueryUrl = `${baseUrl}/query?s=${encodeStatement}`;
+      const metadataUrl = `${baseUrl}/tables/${chainId}/${tableId}`;
       // Make a request for the TABLE NFT's metadata
       const tableMetadata = await fetch(metadataUrl).then((response) =>
         response.json()
       );
       // Parse the TABLE metadata for its created timestamp, row count, column count, and table schema
       const createdTimestamp = tableMetadata.attributes[0].value;
+      const consoleUrl = tableMetadata.animation_url;
       const rowCount = tableData.length;
       const columnCount = Object.keys(tableData[0]).length;
-      const tableSchema = await fetch(
-        `https://testnet.tableland.network/schema/${tableName}`
-      ).then((res) => res.json());
+      const tableSchema = tableMetadata.schema;
       // Using logic from the TABLE NFT SVG to generate a color displayed on the embed
       const color = findColor(rowCount).toString(16);
       // Clean up the returned data for displaying it within the user-facing embed
       const tableSchemaFormatted = tableSchema.columns
         .map((column, _) => {
-          const constraints = column.constraints.length
+          const constraints = column.constraints
             ? `${column.constraints.join(" ")}`
             : "";
           return `${column.name} ${column.type} ${constraints}`;
@@ -157,12 +159,12 @@ export const read = {
           },
           {
             name: "Chain",
-            value: SUPPORTED_CHAINS[chainName].phrase,
+            value: chainName,
             inline: true,
           },
           {
             name: "\u200b",
-            value: hyperlink("See the TABLE NFT", tableSvgUrl),
+            value: hyperlink("Inspect on the Console", consoleUrl),
           },
         ],
         timestamp: new Date().toISOString(),
