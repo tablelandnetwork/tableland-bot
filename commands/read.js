@@ -1,5 +1,5 @@
 import { SlashCommandBuilder, bold, codeBlock, hyperlink } from "discord.js";
-import { connect, resultsToObjects, SUPPORTED_CHAINS } from "@tableland/sdk";
+import { Database, helpers } from "@tableland/sdk";
 import findColor from "../utils/findColor.js";
 
 /**
@@ -24,6 +24,7 @@ async function parse(statement) {
   const chainId = parts[parts.length - 2];
   const tableId = parts[parts.length - 1];
   // Ensure the chain is supported by Tableland
+  console.log(helpers.supportedChains);
   let chainName;
   for (const chain in SUPPORTED_CHAINS) {
     if (SUPPORTED_CHAINS[chain].chainId === Number(chainId)) {

@@ -7,11 +7,11 @@ import {
   guildCreate,
   guildDelete,
 } from "./events/index.js";
-import initSqlParser from "@tableland/sqlparser";
+import { init } from "@tableland/sqlparser";
 dotenv.config();
 
 // Initialize `@tableland/sqlparser` module (adds `sqlparser` object to global namespace)
-(async () => await initSqlParser())();
+(async () => await init())();
 
 // Set the environment variable as either `production` or `development`
 const environment =
