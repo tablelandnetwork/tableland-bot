@@ -35,7 +35,7 @@
   "homepage": "https://github.com/tablelandnetwork/tablebot#readme",
   "dependencies": {
     "@tableland/rigs": "^0.1.4",
-    "@tableland/sdk": "^4.0.1",
+    "@tableland/sdk": "^4.3.0",
     "@tableland/sqlparser": "^1.0.4",
     "@zoralabs/zdk": "^2.2.0",
     "discord.js": "^14.11.0"
