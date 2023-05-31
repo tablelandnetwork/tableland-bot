@@ -36,7 +36,7 @@
   "dependencies": {
     "@tableland/rigs": "^0.1.4",
     "@tableland/sdk": "^4.0.1",
-    "@tableland/sqlparser": "^1.0.4",
+    "@tableland/sqlparser": "^1.2.0",
     "@zoralabs/zdk": "^2.2.0",
     "discord.js": "^14.11.0"
   },
